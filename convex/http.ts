@@ -1,10 +1,17 @@
+
 import { httpRouter } from "convex/server";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { Webhook } from "svix";
 import { api } from "./_generated/api";
 import { httpAction } from "./_generated/server";
+// import { GoogleGenerativeAI } from "@google/generative-ai"; // REMOVE IMPORT
 
 const http = httpRouter();
+
+// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!); // REMOVE CONST
+
+// NOTE: The local helper functions validateWorkoutPlan and validateDietPlan 
+// have been removed from this file and moved to convex/plan_actions.ts
 
 
 http.route({
@@ -65,8 +72,99 @@ http.route({
       }
     }
 
+    if (eventType === "user.updated") {
+      const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+
+      const email = email_addresses[0].email_address;
+      const name = `${first_name || ""} ${last_name || ""}`.trim();
+
+      try {
+        await ctx.runMutation(api.users.updateUser, { 
+          clerkId: id,
+          email,
+          name,
+          image: image_url,
+        });
+      } catch (error) {
+        console.log("Error updating user:", error);
+        return new Response("Error updating user", { status: 500 });
+      }
+    }
 
     return new Response("Webhooks processed successfully", { status: 200 });
+  }),
+});
+
+
+// UPDATED ROUTE TO HANDLE VAPI FUNCTION-CALL WEBHOOK AND END CALL
+http.route({
+  path: "/vapi/generate-program",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    let vapiPayload;
+    try {
+      vapiPayload = await request.json();
+
+      // --- VAPI FUNCTION-CALL PARSING ---
+      if (
+        !vapiPayload.message ||
+        vapiPayload.message.type !== "function-call" ||
+        vapiPayload.message.functionCall.name !== "generate_plan" 
+      ) {
+        console.error("Received unexpected Vapi Webhook payload type:", vapiPayload.message?.type);
+        return new Response("Invalid Vapi Function Call payload", { status: 400 });
+      }
+
+      const { functionCall, metadata } = vapiPayload.message;
+      const args = functionCall.parameters; 
+
+      const actionArgs = {
+        userId: metadata.user_id, // Clerk ID from client-side metadata
+        // Fields gathered by the Vapi Assistant and passed to the action
+        age: args.age,
+        height: args.height,
+        weight: args.weight,
+        injuries: args.injuries,
+        workout_days: args.workout_days,
+        fitness_goal: args.fitness_goal,
+        fitness_level: args.fitness_level,
+      };
+
+      // 🚨 CRITICAL CHANGE: Call the new centralized action
+      // The action handles Gemini API calls and saving the plan.
+      await ctx.runAction(api.plan_actions.generatePlanAction, actionArgs);
+      
+      // The final response to Vapi successfully ends the call (endCall: true)
+      return new Response(
+        JSON.stringify({
+          functionCall: {
+            name: functionCall.name,
+            result: `Your personalized program has been created and saved! You will now be redirected to your profile.`,
+            endCall: true, // This successfully ends the Vapi session
+          },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    } catch (error) {
+      console.error("Error generating fitness plan:", error);
+      
+      // Ensure error response is also in the Vapi Function Call Result format
+      return new Response(
+        JSON.stringify({
+          functionCall: {
+            name: vapiPayload?.message?.functionCall?.name || "generate_plan", 
+            error: error instanceof Error ? `Failed to generate plan: ${error.message}` : String("An unknown error occurred on the server."),
+          },
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
   }),
 });
 
