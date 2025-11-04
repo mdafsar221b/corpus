@@ -93,33 +93,37 @@ Ensure you have the following:
 ---
 
 ### **1. Clone and Install**
-
-git clone [YOUR_REPO_URL] corpus-ai
-cd corpus-ai
+```bash
+git clone [https://github.com/mdafsar221b/corpus]
+```
+```bash
+cd corpus
+```
+```bash
 npm install
-### **2. Configure Environment Variables**
-# Create a .env.local file in your project root:
-
+```
+ #env.local (Demo)
+ 
+```bash
 # Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
-CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
 
 # Clerk Redirect URLs
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
 # Convex Database
-CONVEX_DEPLOYMENT=...
-NEXT_PUBLIC_CONVEX_URL=https://...
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
 
 # Vapi Voice AI
-NEXT_PUBLIC_VAPI_WORKFLOW_ID=as_...
-NEXT_PUBLIC_VAPI_API_KEY=...
+NEXT_PUBLIC_VAPI_WORKFLOW_ID=
+NEXT_PUBLIC_VAPI_API_KEY=
 
 # Gemini LLM Key
-GEMINI_API_KEY=AIzaSy...
-### 4. Configure Vapi Webhook
-
+GEMINI_API_KEY=
+```
 In your **Vapi Dashboard**, set up the Assistant’s Custom Tool (`generate_plan`) as follows:
 
 | Setting | Value |
