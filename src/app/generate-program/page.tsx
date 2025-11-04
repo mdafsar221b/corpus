@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -7,10 +6,27 @@ import { vapi } from "@/lib/vapi";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useAction } from "convex/react"; 
+import {useAction } from "convex/react"; 
 import { api } from "../../../convex/_generated/api"; 
 
-const initialFormData = {
+// Define a type for the internal message state
+interface Message {
+  content: string;
+  role: 'assistant' | 'user';
+}
+
+// Define the shape for the form data
+interface FormData {
+  age: string;
+  height: string;
+  weight: string;
+  injuries: string;
+  workout_days: string;
+  fitness_goal: string;
+  fitness_level: string;
+}
+
+const initialFormData: FormData = {
   age: "25",
   height: "5'10\"",
   weight: "180 lbs",
@@ -24,11 +40,12 @@ const GenerateProgramPage = () => {
   const [callActive, setCallActive] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  // FIX: Replace 'any[]' with 'Message[]'
+  const [messages, setMessages] = useState<Message[]>([]); 
   const [callEnded, setCallEnded] = useState(false);
 
   
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [submissionLoading, setSubmissionLoading] = useState(false);
   const generatePlanAction = useAction(api.plan_actions.generatePlanAction); 
 
@@ -103,14 +120,25 @@ const GenerateProgramPage = () => {
       console.log("AI stopped Speaking");
       setIsSpeaking(false);
     };
-    const handleMessage = (message: any) => {
-      if (message.type === "transcript" && message.transcriptType === "final") {
-        const newMessage = { content: message.transcript, role: message.role };
+    
+    const handleMessage = (message: unknown) => { 
+      // Safely check if message is a Vapi transcript object
+      if (typeof message === 'object' && message !== null && 
+        'type' in message && message.type === "transcript" && 
+        'transcriptType' in message && message.transcriptType === "final" &&
+        'transcript' in message && typeof message.transcript === 'string' &&
+        'role' in message && (message.role === 'assistant' || message.role === 'user')
+      ) {
+        const newMessage: Message = { content: message.transcript, role: message.role };
         setMessages((prev) => [...prev, newMessage]);
+      } else {
+        // Fallback for unexpected message structures
+        console.log("Ignoring non-final Vapi message or invalid format:", message);
       }
     };
 
-    const handleError = (error: any) => {
+    // FIX: Replace 'any' with 'unknown'
+    const handleError = (error: unknown) => { 
       console.log("Vapi Error", error);
       setConnecting(false);
       setCallActive(false);
