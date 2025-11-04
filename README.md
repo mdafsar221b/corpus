@@ -94,7 +94,6 @@ Ensure you have the following:
 
 ### **1. Clone and Install**
 
-```bash
 git clone [YOUR_REPO_URL] corpus-ai
 cd corpus-ai
 npm install
