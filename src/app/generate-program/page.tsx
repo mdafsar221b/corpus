@@ -7,7 +7,7 @@ import { vapi } from "@/lib/vapi";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useAction } from "convex/react"; // Imported useAction
+import { useMutation, useAction } from "convex/react"; 
 import { api } from "../../../convex/_generated/api"; 
 
 const initialFormData = {
@@ -53,7 +53,7 @@ const GenerateProgramPage = () => {
       return originalError.call(console, msg, ...args);
     };
 
-    // restore original handler on unmount
+    
     return () => {
       console.error = originalError;
     };
@@ -77,7 +77,7 @@ const GenerateProgramPage = () => {
     }
   }, [callEnded, router]);
 
-  // setup event listeners for vapi
+
   useEffect(() => {
     const handleCallStart = () => {
       console.log("Call started");
@@ -91,7 +91,7 @@ const GenerateProgramPage = () => {
       setCallActive(false);
       setConnecting(false);
       setIsSpeaking(false);
-      setCallEnded(true); // Triggers redirect after call ends
+      setCallEnded(true); 
     };
 
     const handleSpeechStart = () => {
@@ -268,7 +268,7 @@ const GenerateProgramPage = () => {
                 </div>
               </div>
 
-              <h2 className="text-xl font-bold text-foreground">CodeFlex AI</h2>
+              <h2 className="text-xl font-bold text-foreground">Corpus AI</h2>
               <p className="text-sm text-muted-foreground mt-1">Fitness & Diet Coach</p>
 
               {/* SPEAKING INDICATOR */}
@@ -352,7 +352,33 @@ const GenerateProgramPage = () => {
             </span>
           </Button>
         </div>
+                    {/* MESSAGE COINTER  */}
+        {messages.length > 0 && (
+            <div
+            ref={messageContainerRef}
+            className="w-full bg-card/90 backdrop-blur-sm border border-border rounded-xl p-4 mt-8 h-64 overflow-y-auto transition-all duration-300 scroll-smooth"
+            >
+                <div className="space-y-3">
+                {messages.map((msg, index) => (
+                    <div key={index} className="message-item animate-fadeIn">
+                    <div className="font-semibold text-xs text-muted-foreground mb-1">
+                        {msg.role === "assistant" ? "corpus AI" : "You"}:
+                    </div>
+                    <p className="text-foreground">{msg.content}</p>
+                    </div>
+                ))}
 
+                {callEnded && (
+                    <div className="message-item animate-fadeIn">
+                    <div className="font-semibold text-xs text-primary mb-1">System:</div>
+                    <p className="text-foreground">
+                        Your fitness program has been created! Redirecting to your profile...
+                    </p>
+                    </div>
+                )}
+                </div>
+            </div>
+        )}
   
         <div className="mt-12 max-w-xl mx-auto">
             <h2 className="text-xl font-bold mb-4 text-primary text-center">Manual Plan Generation</h2>
@@ -450,34 +476,8 @@ const GenerateProgramPage = () => {
                 </Button>
             </form>
         </div>
-        
-        {/* MESSAGE COINTER  */}
-        {messages.length > 0 && (
-            <div
-            ref={messageContainerRef}
-            className="w-full bg-card/90 backdrop-blur-sm border border-border rounded-xl p-4 mt-8 h-64 overflow-y-auto transition-all duration-300 scroll-smooth"
-            >
-                <div className="space-y-3">
-                {messages.map((msg, index) => (
-                    <div key={index} className="message-item animate-fadeIn">
-                    <div className="font-semibold text-xs text-muted-foreground mb-1">
-                        {msg.role === "assistant" ? "CodeFlex AI" : "You"}:
-                    </div>
-                    <p className="text-foreground">{msg.content}</p>
-                    </div>
-                ))}
 
-                {callEnded && (
-                    <div className="message-item animate-fadeIn">
-                    <div className="font-semibold text-xs text-primary mb-1">System:</div>
-                    <p className="text-foreground">
-                        Your fitness program has been created! Redirecting to your profile...
-                    </p>
-                    </div>
-                )}
-                </div>
-            </div>
-        )}
+        
         
       </div>
     </div>

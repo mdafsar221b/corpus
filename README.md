@@ -1,36 +1,139 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💪 Corpus AI: Personalized Fitness & Diet Coach
 
-## Getting Started
+![Landing Page](public/screenshots/landing-page.png)
 
-First, run the development server:
+Corpus AI is a **modern, full-stack voice assistant application** designed to generate **hyper-personalized fitness and diet plans**.  
+Users can either **chat with the AI** or use a **manual form** to provide biometrics and goals, which are then analyzed by our **Gemini-powered backend** to instantly generate structured fitness programs securely stored in their profile.
+
+This project leverages a **Vapi Assistant + Convex Backend** architecture for real-time, reliable data flow and persistent user management.
+
+---
+
+## 🚀 Key Features
+
+- 🎙️ **Conversational AI:**  
+  Uses the **Vapi Assistant + Custom Tool** integration for reliable data collection and triggering backend actions.
+
+- 🧠 **Gemini AI Integration:**  
+  Leverages **Google’s Gemini API** (via Convex Actions) to analyze user input and produce structured fitness and nutrition plans.
+
+- 🔒 **Secure Authentication:**  
+  Powered by **Clerk** for seamless, secure sign-in and sign-up workflows.
+
+- 💾 **Real-time Database:**  
+  **Convex** provides a reactive, serverless backend where plans are saved instantly and synced live with user dashboards.
+
+- 📱 **Responsive & Aesthetic UI:**  
+  Built with **Next.js**, **Tailwind CSS**, and **Shadcn UI**, featuring a dark, cyberpunk-inspired theme optimized for all devices.
+
+- 📝 **Manual Fallback:**  
+  Allows users to bypass the voice assistant in case of network or microphone issues.
+
+- 🗑️ **Program Management:**  
+  Users can view, activate, or delete multiple generated plans using a clean custom UI dialog.
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology | Purpose |
+|-----------|-------------|----------|
+| **Frontend** | Next.js / React | App routing, components, and client-side logic |
+| **Styling** | Tailwind CSS / Shadcn UI | Responsive, utility-first styling with cyberpunk aesthetic |
+| **Authentication** | Clerk | User authentication and route protection |
+| **Voice Interface** | Vapi | WebRTC-based voice assistant for transcription and function calling |
+| **Backend / DB** | Convex | Real-time database and secure backend with serverless actions |
+| **AI / LLM** | Google Gemini API | Generates structured, intelligent fitness and diet plans |
+
+---
+
+## 🖼️ Application Screenshots
+
+### 🏠 Landing Page
+Modern, dark-themed interface with dynamic terminal-like visuals.  
+![Landing Page](public/screenshots/landing-page.png)
+
+---
+
+### 👤 User Profile & Plan Overview
+Secure user dashboard displaying active and historical fitness plans.  
+![User Profile](public/screenshots/user-profile.png)
+
+---
+
+### 🏋️ Generated Workout Plan
+Structured weekly training schedules displayed in the **Workout Plan** tab.  
+![Workout Plan](public/screenshots/workout-plan.png)
+
+---
+
+### 🍽️ Generated Diet Plan
+Personalized calorie targets and meal recommendations via the **Diet Plan** tab.  
+![Diet Plan](public/screenshots/diet-plan.png)
+
+---
+
+### 🗣️ Voice Assistant Interface
+The main conversational interface for interactive fitness plan generation.  
+![Voice Assistant](public/screenshots/corpus-ai.png)
+
+---
+
+## ⚙️ Setup & Installation
+
+### **Prerequisites**
+Ensure you have the following:
+
+- Node.js (v18+)
+- Clerk Account
+- Convex Account
+- Vapi Account (with Assistant configured to call `generate_plan`)
+- Gemini API Key
+
+---
+
+### **1. Clone and Install**
+
+```bash
+git clone [YOUR_REPO_URL] corpus-ai
+cd corpus-ai
+npm install
+### **2. Configure Environment Variables**
+# Create a .env.local file in your project root:
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+
+# Clerk Redirect URLs
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+# Convex Database
+CONVEX_DEPLOYMENT=...
+NEXT_PUBLIC_CONVEX_URL=https://...
+
+# Vapi Voice AI
+NEXT_PUBLIC_VAPI_WORKFLOW_ID=as_...
+NEXT_PUBLIC_VAPI_API_KEY=...
+
+# Gemini LLM Key
+GEMINI_API_KEY=AIzaSy...
+### 4. Configure Vapi Webhook
+
+In your **Vapi Dashboard**, set up the Assistant’s Custom Tool (`generate_plan`) as follows:
+
+| Setting | Value |
+|----------|--------|
+| **Function Name** | generate_plan |
+| **Server URL** | `https://[YOUR_CONVEX_URL]/vapi/generate-program` |
+| **Async** | ON |
+| **Strict** | ON |
+
+---
+
+### 5. Run the Application
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

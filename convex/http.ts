@@ -118,29 +118,26 @@ http.route({
       const { functionCall, metadata } = vapiPayload.message;
       const args = functionCall.parameters; 
 
-      const actionArgs = {
-        userId: metadata.user_id, // Clerk ID from client-side metadata
-        // Fields gathered by the Vapi Assistant and passed to the action
-        age: args.age,
+     const actionArgs = {
+        userId: metadata.user_id, 
+        age: parseInt(args.age), 
         height: args.height,
         weight: args.weight,
         injuries: args.injuries,
-        workout_days: args.workout_days,
+        workout_days: parseInt(args.workout_days),
         fitness_goal: args.fitness_goal,
         fitness_level: args.fitness_level,
       };
-
-      // 🚨 CRITICAL CHANGE: Call the new centralized action
-      // The action handles Gemini API calls and saving the plan.
+ 
       await ctx.runAction(api.plan_actions.generatePlanAction, actionArgs);
       
-      // The final response to Vapi successfully ends the call (endCall: true)
+  
       return new Response(
         JSON.stringify({
           functionCall: {
             name: functionCall.name,
             result: `Your personalized program has been created and saved! You will now be redirected to your profile.`,
-            endCall: true, // This successfully ends the Vapi session
+            endCall: true, 
           },
         }),
         {

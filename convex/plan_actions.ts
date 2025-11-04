@@ -1,10 +1,11 @@
-
 "use node";
+
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { v } from "convex/values";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { Id } from "./_generated/dataModel"; // ⬅️ ADD THIS IMPORT
+
+import type { Id } from "./_generated/dataModel"; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -35,7 +36,6 @@ function validateDietPlan(plan: any) {
   return validatedPlan;
 }
 
-// 🚨 FIX 1: Explicitly define the return type as Promise<Id<"plans">>
 export const generatePlanAction = action({
   args: {
     userId: v.string(),
@@ -47,7 +47,8 @@ export const generatePlanAction = action({
     fitness_goal: v.string(),
     fitness_level: v.string(),
   },
-  handler: async (ctx, args): Promise<Id<"plans">> => { // ⬅️ Type Annotation Added
+
+  handler: async (ctx, args): Promise<Id<"plans">> => { 
     const { userId, age, height, weight, injuries, workout_days, fitness_goal, fitness_level } = args;
 
     const model = genAI.getGenerativeModel({
@@ -150,7 +151,7 @@ export const generatePlanAction = action({
     let dietPlan = validateDietPlan(JSON.parse(dietPlanText));
 
 
-    // 🚨 FIX 2: Explicitly annotate the type of planId
+    
     const planId: Id<"plans"> = await ctx.runMutation(api.plans.createPlan, {
       userId: userId,
       dietPlan,

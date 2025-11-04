@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 
 export const createPlan = mutation({
   args: {
@@ -13,8 +14,11 @@ export const createPlan = mutation({
           routines: v.array(
             v.object({
               name: v.string(),
-              sets: v.number(),
-              reps: v.number(),
+              sets: v.optional(v.number()),
+              reps: v.optional(v.number()),
+              duration: v.optional(v.string()),
+              description: v.optional(v.string()),
+              exercises: v.optional(v.array(v.string())),
             })
           ),
         })
@@ -58,5 +62,14 @@ export const getUserPlans = query({
       .collect();
 
     return plans;
+  },
+});
+
+export const deletePlan = mutation({
+  args: { 
+    planId: v.id("plans") 
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.planId);
   },
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
 import ProfileHeader from "@/components/ProfileHeader";
@@ -9,7 +9,8 @@ import NoFitnessPlan from "@/components/NoFitnessPlan";
 import CornerElements from "@/components/CornerElements";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppleIcon, CalendarIcon, DumbbellIcon } from "lucide-react";
+import { AppleIcon, CalendarIcon, DumbbellIcon, Trash2Icon } from "lucide-react"; 
+import type { Doc } from "../../../convex/_generated/dataModel"; 
 import {
   Accordion,
   AccordionContent,
@@ -17,13 +18,106 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const ProfilePage = () => {
-  const { user } = useUser();
-  const userId = user?.id as string;
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose, 
+} from "@/components/ui/dialog"; 
 
-  const allPlans = useQuery(api.plans.getUserPlans, { userId });
+
+
+const DeleteButton = ({ plan }: { plan: Doc<"plans"> }) => {
+  const deletePlanMutation = useMutation(api.plans.deletePlan);
+  const [deleting, setDeleting] = useState(false);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false); 
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deletePlanMutation({ planId: plan._id });
+     
+      setIsDialogOpen(false); 
+    } catch (error) {
+      console.error("Failed to delete plan:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      
+
+      <DialogTrigger asChild>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="gap-1.5"
+        >
+          <Trash2Icon className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+
+      {/* 2. Dialog Content (The custom pop-up window) */}
+      <DialogContent className="sm:max-w-[425px] bg-card/90 backdrop-blur-sm border border-border">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-destructive flex items-center gap-2">
+            <Trash2Icon className="h-6 w-6" />
+            Confirm Deletion
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground mt-2">
+            This action cannot be undone. You are about to permanently delete the plan: 
+            <span className="text-primary font-mono ml-1">
+                {plan.name}
+            </span>
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="mt-4 flex justify-center items-center ">
+          <DialogClose asChild>
+          </DialogClose>
+          <Button
+            onClick={handleDelete}
+            variant="destructive"
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting...' : 'Delete Permanently'}
+          </Button>
+          
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+  );
+};
+
+
+const ProfilePage = () => {
+  const { user, isSignedIn } = useUser();
+  const userId = user?.id; 
+
+  const queryArgs = isSignedIn ? { userId: userId! } : "skip";
+  
+  const allPlans = useQuery(api.plans.getUserPlans, queryArgs);
   const [selectedPlanId, setSelectedPlanId] = useState<null | string>(null);
 
+  if (allPlans === undefined && isSignedIn) {
+    return (
+        <div className="container mx-auto pt-16 min-h-[60vh] flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
+            <h2 className="text-2xl text-foreground mt-6">Loading Programs...</h2>
+            <p className="text-muted-foreground mt-2">Fetching your personalized fitness data.</p>
+        </div>
+    );
+  }
+  
   const activePlan = allPlans?.find((plan) => plan.isActive);
 
   const currentPlan = selectedPlanId
@@ -55,7 +149,7 @@ const ProfilePage = () => {
                   key={plan._id}
                   onClick={() => setSelectedPlanId(plan._id)}
                   className={`text-foreground border hover:text-white ${
-                    selectedPlanId === plan._id
+                    currentPlan?._id === plan._id 
                       ? "bg-primary/20 text-primary border-primary"
                       : "bg-transparent border-border hover:border-primary/50"
                   }`}
@@ -77,12 +171,18 @@ const ProfilePage = () => {
             <div className="relative backdrop-blur-sm border border-border rounded-lg p-6">
               <CornerElements />
 
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                <h3 className="text-lg font-bold">
-                  PLAN: <span className="text-primary">{currentPlan.name}</span>
-                </h3>
+              {/* UPDATED HEADER TO INCLUDE DELETE BUTTON */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                  <h3 className="text-lg font-bold">
+                    PLAN: <span className="text-primary">{currentPlan.name}</span>
+                  </h3>
+                </div>
+            
+                <DeleteButton plan={currentPlan} />
               </div>
+
 
               <Tabs defaultValue="workout" className="w-full">
                 <TabsList className="mb-6 w-full grid grid-cols-2 bg-cyber-terminal-bg border">
